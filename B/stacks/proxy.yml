@@ -1,0 +1,42 @@
+version: "3"
+services:
+  proxy:
+    image: dockercloud/haproxy
+    deploy:
+      mode: global
+      update_config:
+        parallelism: 1
+        delay: 5s
+      resources:
+        reservations:
+          cpus: "0.01"
+          memory: 20M
+        limits:
+          cpus: "0.05"
+          memory: 64M
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 5
+      placement:
+        constraints: [node.role == manager]
+    volumes:
+      - '/var/run/docker.sock:/var/run/docker.sock'
+    networks:
+      - proxy
+    ports:
+      - "80:80"
+
+  helloworld:
+    image: dockercloud/hello-world
+    networks:
+      - proxy
+    deploy:
+      replicas: 4
+    environment:
+      - SERVICE_PORTS="80"
+      - VIRTUAL_HOST=http://hello.homecolis.dgmjtr
+
+networks:
+  proxy:
+
