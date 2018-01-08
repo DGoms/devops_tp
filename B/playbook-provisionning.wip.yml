@@ -3,18 +3,41 @@
   hosts: mongo_master
   remote_user: ubuntu
   become: true
+
+  roles:
+    - role: greendayonfire.mongodb
+  vars:
+    mongodb_net_bindip: 0.0.0.0
+    mongodb_login_host: 35.166.198.238
+    mongodb_security_authorization: "enabled"
+    mongodb_users:
+     - {
+       name: user,
+       password: 123456,
+       roles: dbOwner,
+       database: test
+       }      
+
+    # replication
+    mongodb_login_host: mongo_master
+    mongodb_replication_params:
+      - { host_name: mongo_slave, host_port: "{{ mongodb_net_port }}", host_type: replica }
+
+- hosts: mongo_slave
+  remote_user: ubuntu
+  become: true
   
   roles:
     - role: greendayonfire.mongodb
-      mongodb_net_bindip: 127.0.0.1,35.166.198.238
-      mongodb_security_authorization: "enabled"
-      mongodb_root_admin_name: root
-      mongodb_root_admin_password: 123456
-      mongodb_user_admin_name: admin
-      mongodb_user_admin_password: 123456
-
-      # replication
-      mongodb_login_host: mongo_master
-      mongodb_replication_params:
-        - { host_name: mongo_slave, host_port: "{{ mongodb_net_port }}", host_type: replica }
+  vars:
+    mongodb_net_bindip: 0.0.0.0
+    mongodb_login_host: 35.166.198.238
+    mongodb_security_authorization: "enabled"
+    mongodb_users:
+     - {
+       name: testUser,
+       password: passw0rd,
+       roles: readWrite,
+       database: test
+       }
 
